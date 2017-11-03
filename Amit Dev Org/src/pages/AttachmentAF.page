@@ -1,0 +1,59 @@
+<apex:page standardController="Case" extensions="AttachmentActionFunction">
+<script type='text/javascript'>
+var maxStringSize = 6000000;
+var attachmentList;
+var j;
+function uploadFiles()
+{
+     input = document.getElementById('fileinput');
+     attachmentList = input.files;
+    if(j == undefined) 
+    j = 0;
+     
+     var file;
+    if(j < attachmentList.length)
+     {
+        file = attachmentList[j];
+    	var name = file.name;
+        var reader = new FileReader();  
+        reader.onload = function(e) {  
+        	var attachmentbodybase64 = window.btoa(reader.result)
+            console.log(attachmentbodybase64.length);
+            if(attachmentbodybase64.length > maxStringSize )
+            alert("File size is too large to handle");
+            else
+            {
+                j++;
+                saveFileAF(attachmentbodybase64, name);
+            }
+        }
+         reader.readAsDataURL(file);
+      }
+    else
+    {
+        console.log('this is end');
+        var url = window.location.origin + '/'+"{!$CurrentPage.parameters.Id}";
+        console.log(url);
+        window.location.href = url;
+    }
+    
+ }
+</script><apex:form >
+<apex:pageMessages />
+  <input type= "file" Id= "fileinput"  multiple="multiple" />
+    <apex:commandButton onclick="uploadFiles(); return false;" value="Upload"/>
+    <apex:actionFunction name="saveFileAF" 
+         action="{!saveFile}" oncomplete="uploadFiles()" rerender="form"  status="uploading">
+        <apex:param name="base64File" value="" assignTo="{!base64}"/>
+        <apex:param name="fileName" value="" assignTo="{!fileName}"/>
+    </apex:actionFunction>
+    <apex:actionStatus id="uploading" >
+                <apex:facet name="start" >
+                  <img src="/img/loading.gif" />                    
+    </apex:facet></apex:actionStatus>
+        <!--
+    <apex:actionStatus startText=" (Uploading...)" stopText="(done)" id="counterStatus"/>-->
+
+    
+ </apex:form>
+</apex:page>
